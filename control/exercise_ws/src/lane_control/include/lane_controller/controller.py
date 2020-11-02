@@ -87,8 +87,6 @@ class PurePursuitLaneController:
         self.distances_white = np.asarray(distances)
         # print(len(self.distances_white))
     def get_nearest_to_ref(self, distances, reference_dist, is_current):
-        if not is_current:
-            reference_dist *= 1.5
 
         idx = (np.abs(distances - reference_dist)).argmin()
         return idx
