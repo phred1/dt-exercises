@@ -126,7 +126,7 @@ class LaneControllerNode(DTROS):
         else:
             print("NOT PURE")
             print(self.pose_msg.phi)
-            o = np.sin(self.pose_msg.phi + np.pi) + self.pose_msg.d
+            o = np.sin(self.pose_msg.phi + np.pi) + 2 * self.pose_msg.d
             car_control_msg.omega = o
             print("omega_computed: " + str(o))
         print("phi: " + str(self.pose_msg.phi))
