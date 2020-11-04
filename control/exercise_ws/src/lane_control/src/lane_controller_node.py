@@ -34,7 +34,7 @@ class LaneControllerNode(DTROS):
 
         # Add the node parameters to the parameters dictionary
         self.params = dict()
-        self.params['~follow_dist'] = rospy.get_param('~follow_dist', None)
+        self.params['~look_ahead'] = rospy.get_param('~look_ahead', None)
         self.params['~K'] = rospy.get_param('~K', None)
 
         self.pp_controller = PurePursuitLaneController(self.params)
@@ -50,11 +50,11 @@ class LaneControllerNode(DTROS):
                                                  LanePose,
                                                  self.cbLanePoses,
                                                  queue_size=1)
-        self.log("INIT SEGLIST FILTERED")
-        self.sub_seglist_filtered = rospy.Subscriber("/agent/lane_filter_node/seglist_filtered",
-                                                 SegmentList,
-                                                 self.cbSeglistFiltered,
-                                                 queue_size=1)
+        # self.log("INIT SEGLIST FILTERED")
+        # self.sub_seglist_filtered = rospy.Subscriber("/agent/lane_filter_node/seglist_filtered",
+        #                                          SegmentList,
+        #                                          self.cbSeglistFiltered,
+        #                                          queue_size=1)
         self.log("INIT SEGLIST OUT")                                     
         self.sub_seglist_filtered = rospy.Subscriber("/agent/ground_projection_node/lineseglist_out",
                                                  SegmentList,
@@ -63,22 +63,22 @@ class LaneControllerNode(DTROS):
         self.log("Initialized!")
 
 
-    def cbSeglistFiltered(self, input_seglist_filtered):
-        """Callback receiving pose messages
+    # def cbSeglistFiltered(self, input_seglist_filtered):
+    #     """Callback receiving pose messages
 
-        Args:
-            input_seglist_filtered (:obj:`SegmentList`): Message containing information about filtered list of segments that are considered as valid.
-        """
-        yellow_lines = []
-        white_lines = []
-        for line in input_seglist_filtered.segments:
-            if line.color == 1:
-                yellow_lines.append(line)
-            elif line.color == 0:
-                white_lines.append(line) 
-        self.params["~yellow_lines: "] = yellow_lines
-        self.params["~white_lines"] = white_lines
-        self.cbParametersChanged()
+    #     Args:
+    #         input_seglist_filtered (:obj:`SegmentList`): Message containing information about filtered list of segments that are considered as valid.
+    #     """
+    #     yellow_lines = []
+    #     white_lines = []
+    #     for line in input_seglist_filtered.segments:
+    #         if line.color == 1:
+    #             yellow_lines.append(line)
+    #         elif line.color == 0:
+    #             white_lines.append(line) 
+    #     self.params["~yellow_lines: "] = yellow_lines
+    #     self.params["~white_lines"] = white_lines
+    #     self.cbParametersChanged()
     
 
     def cbSeglistOut(self, input_seglist_out):
@@ -87,7 +87,7 @@ class LaneControllerNode(DTROS):
         Args:
             input_seglist_out(:obj:`SegmentList`): Message containing information line segments in the ground plane relative to the robot origin.
         """
-        # self.log("SEGLIST_OUT")
+
         yellow_lines = []
         white_lines = []
         for line in input_seglist_out.segments:
@@ -95,11 +95,10 @@ class LaneControllerNode(DTROS):
                 yellow_lines.append(line)
             elif line.color == 0:
                 white_lines.append(line) 
-        # self.log("ground_yellow: " + str(len(yellow_lines)))
+
         self.params["~yellow_lines"] = yellow_lines
         self.params["~white_lines"] = white_lines
         self.cbParametersChanged()
-        # self.log(len(white_lines))
     
 
     def cbLanePoses(self, input_pose_msg):
@@ -108,30 +107,20 @@ class LaneControllerNode(DTROS):
         Args:
             input_pose_msg (:obj:`LanePose`): Line segments in the ground plane relative to the robot origin.
         """
-        # self.log("POSE")
-        # self.log(input_pose_msg.phi)
+
         self.pose_msg = input_pose_msg
         car_control_msg = Twist2DStamped()
         car_control_msg.header = self.pose_msg.header
 
-        # # TODO This needs to get changed
         v, omega = self.pp_controller.pure_pursuit()
-        # print("OMEGA")
-        # print(omega)
-        car_control_msg.v =  v
-        car_control_msg.omega = omega
+        car_control_msg.v = v
+
         if omega :
-            print("PURE")
             car_control_msg.omega = omega
         else:
-            print("NOT PURE")
-            print(self.pose_msg.phi)
-            o = np.sin(self.pose_msg.phi + np.pi) + 2 * self.pose_msg.d
-            car_control_msg.omega = o
-            print("omega_computed: " + str(o))
-        print("phi: " + str(self.pose_msg.phi))
-        print("d: " + str(self.pose_msg.d))
-        print("in_lane: " + str(self.pose_msg.in_lane))
+            w = np.sin(self.pose_msg.phi + np.pi)
+            w = 7 * w + np.sign(w) * 6 * self.pose_msg.d
+            car_control_msg.omega = w
     
         self.publishCmd(car_control_msg)
 

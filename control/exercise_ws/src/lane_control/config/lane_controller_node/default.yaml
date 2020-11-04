@@ -2,6 +2,6 @@
 
 ## ADD CONFIGS HERE
 
-## follow_dist: 0.5 good for straight
-follow_dist: 0.2
+## look_ahead: 0.5 good for straight
+look_ahead: 0.3
 K: 0.2
