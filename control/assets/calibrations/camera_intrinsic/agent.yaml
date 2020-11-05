@@ -1,0 +1,55 @@
+camera_matrix:
+  cols: 3
+  data:
+  - 494.0424891611786
+  - 0.0
+  - 308.6894687239871
+  - 0.0
+  - 491.58452050531423
+  - 244.83596884594988
+  - 0.0
+  - 0.0
+  - 1.0
+  rows: 3
+camera_name: scrooge/camera_node
+distortion_coefficients:
+  cols: 5
+  data:
+  - -0.6844518157489823
+  - 0.4218663658425287
+  - -0.0035750180723600916
+  - -0.008738284618378353
+  - 0.0
+  rows: 1
+distortion_model: plumb_bob
+image_height: 480
+image_width: 640
+projection_matrix:
+  cols: 4
+  data:
+  - 370.5174255371094
+  - 0.0
+  - 299.4153910789464
+  - 0.0
+  - 0.0
+  - 394.9163513183594
+  - 243.91910841461868
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+  rows: 3
+rectification_matrix:
+  cols: 3
+  data:
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  rows: 3

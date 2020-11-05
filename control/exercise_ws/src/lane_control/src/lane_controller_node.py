@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
+import os
 import rospy
 import inspect
 from duckietown.dtros import DTROS, NodeType, TopicType, DTParam, ParamType
@@ -50,36 +51,14 @@ class LaneControllerNode(DTROS):
                                                  LanePose,
                                                  self.cbLanePoses,
                                                  queue_size=1)
-        # self.log("INIT SEGLIST FILTERED")
-        # self.sub_seglist_filtered = rospy.Subscriber("/agent/lane_filter_node/seglist_filtered",
-        #                                          SegmentList,
-        #                                          self.cbSeglistFiltered,
-        #                                          queue_size=1)
+
         self.log("INIT SEGLIST OUT")                                     
-        self.sub_seglist_filtered = rospy.Subscriber("/agent/ground_projection_node/lineseglist_out",
+        self.sub_seglist_filtered = rospy.Subscriber(f"/{os.environ['VEHICLE_NAME']}/ground_projection_node/lineseglist_out",
                                                  SegmentList,
                                                  self.cbSeglistOut,
                                                  queue_size=1)
         self.log("Initialized!")
 
-
-    # def cbSeglistFiltered(self, input_seglist_filtered):
-    #     """Callback receiving pose messages
-
-    #     Args:
-    #         input_seglist_filtered (:obj:`SegmentList`): Message containing information about filtered list of segments that are considered as valid.
-    #     """
-    #     yellow_lines = []
-    #     white_lines = []
-    #     for line in input_seglist_filtered.segments:
-    #         if line.color == 1:
-    #             yellow_lines.append(line)
-    #         elif line.color == 0:
-    #             white_lines.append(line) 
-    #     self.params["~yellow_lines: "] = yellow_lines
-    #     self.params["~white_lines"] = white_lines
-    #     self.cbParametersChanged()
-    
 
     def cbSeglistOut(self, input_seglist_out):
         """Callback receiving pose messages
@@ -87,7 +66,6 @@ class LaneControllerNode(DTROS):
         Args:
             input_seglist_out(:obj:`SegmentList`): Message containing information line segments in the ground plane relative to the robot origin.
         """
-
         yellow_lines = []
         white_lines = []
         for line in input_seglist_out.segments:
@@ -119,7 +97,7 @@ class LaneControllerNode(DTROS):
             car_control_msg.omega = omega
         else:
             w = np.sin(self.pose_msg.phi + np.pi)
-            w = 7 * w + np.sign(w) * 6 * self.pose_msg.d
+            w = 3 * w + np.sign(w) * 3 * self.pose_msg.d
             car_control_msg.omega = w
     
         self.publishCmd(car_control_msg)

@@ -44,11 +44,9 @@ class PurePursuitLaneController:
 
     # Computes middle point between two points
     def middle(self, point1, point2):
-        y_weigth = 0.6
-        w_weigth = 0.4
-        # if self.left_turn:
-        #     y_weigth = 0.45
-        #     w_weigth = 0.55
+        y_weigth = 0.7
+        w_weigth = 0.3
+
         x = (y_weigth * point1.x + w_weigth * point2.x) 
         y = (y_weigth * point1.y + w_weigth * point2.y)
         middle = FollowPoint(x, y)
@@ -103,8 +101,6 @@ class PurePursuitLaneController:
         d_total = 0
         for wl in white_lines:
             d = (yellow_point.x - wl.points[0].x)*(wl.points[1].y - wl.points[0].y) - (yellow_point.y - wl.points[0].y)*(wl.points[1].x - wl.points[0].x)
-            if d < 0:
-                return False
             d_total += d 
         mean_d = d_total/len(white_lines)
         return mean_d > 0 
@@ -144,7 +140,6 @@ class PurePursuitLaneController:
         """
 
         if self.distances_yellow.size > 0 and self.distances_white.size > 0:
-
             idx_yellow = self.get_nearest_to_ref(self.distances_yellow, self.parameters['~look_ahead'], True)
             follow_point_yellow = self.follow_points_yellow[idx_yellow]
             if self.distances_white.size > 0 :
@@ -171,10 +166,11 @@ class PurePursuitLaneController:
 
         sin_alpha =  self.follow_point.y / self.distance
         
-        v = 0.5
+        v = 0.1
         
         w = None
         if self.do_pure_pursuit:
+            
             w = (sin_alpha / self.parameters["~K"])
 
         self.do_pure_pursuit = True
