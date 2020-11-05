@@ -87,8 +87,6 @@ class PurePursuitLaneController:
         d_total = 0
         for yl in yellow_lines:
             d = (white_point.x - yl.points[0].x)*(yl.points[1].y - yl.points[0].y) - (white_point.y - yl.points[0].y)*(yl.points[1].x - yl.points[0].x)
-            if d < 0:
-                return False
             d_total += d 
         mean_d = d_total/len(yellow_lines)
         return mean_d > 0 
@@ -139,7 +137,8 @@ class PurePursuitLaneController:
                 - follow_point: numpty array of follow point closest to the ~look_ahead parameter
         """
 
-        if self.distances_yellow.size > 0 and self.distances_white.size > 0:
+        if self.distances_yellow.size > 2 and self.distances_white.size > 2:
+
             idx_yellow = self.get_nearest_to_ref(self.distances_yellow, self.parameters['~look_ahead'], True)
             follow_point_yellow = self.follow_points_yellow[idx_yellow]
             if self.distances_white.size > 0 :

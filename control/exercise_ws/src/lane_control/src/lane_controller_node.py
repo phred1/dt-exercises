@@ -51,7 +51,6 @@ class LaneControllerNode(DTROS):
                                                  LanePose,
                                                  self.cbLanePoses,
                                                  queue_size=1)
-
         self.log("INIT SEGLIST OUT")                                     
         self.sub_seglist_filtered = rospy.Subscriber(f"/{os.environ['VEHICLE_NAME']}/ground_projection_node/lineseglist_out",
                                                  SegmentList,
@@ -91,15 +90,17 @@ class LaneControllerNode(DTROS):
         car_control_msg.header = self.pose_msg.header
 
         v, omega = self.pp_controller.pure_pursuit()
-        car_control_msg.v = v
 
         if omega :
             car_control_msg.omega = omega
         else:
+            v = 0.25
             w = np.sin(self.pose_msg.phi + np.pi)
-            w = 3 * w + np.sign(w) * 3 * self.pose_msg.d
+            a = 6
+            b = 6
+            w = a * w + np.sign(w) * b * self.pose_msg.d
             car_control_msg.omega = w
-    
+        car_control_msg.v = v
         self.publishCmd(car_control_msg)
 
 
