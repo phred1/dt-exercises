@@ -50,28 +50,64 @@ class LaneFilterHistogramKF():
         self.cov_0 = [[self.sigma_d_0, 0], [0, self.sigma_phi_0]]
 
         self.belief = {'mean': self.mean_0, 'covariance': self.cov_0}
-
+        self.Q = np.array([[0.6, 0], [0,  0.6]])
+        self.R = np.array([[0.25, 0], [0,  0.1]])
+        self.A = np.identity(2)
+        self.H = np.identity(2)
         self.encoder_resolution = 0
         self.wheel_radius = 0.0
         self.initialized = False
 
     def predict(self, dt, left_encoder_delta, right_encoder_delta):
-        #TODO update self.belief based on right and left encoder data + kinematics
+        # #TODO update self.belief based on right and left encoder data + kinematics
         if not self.initialized:
             return
+        d_left = 2 * np.pi * self.wheel_radius * (left_encoder_delta / 135) 
+        d_right = 2 * np.pi * self.wheel_radius * (right_encoder_delta / 135) 
+        v_left = d_left / dt
+        v_right = d_right / dt
+        theta_delta = (d_right -  d_left) / self.baseline
+        w_car =  theta_delta / dt
+        v_car = (v_right + v_left) / 2
+        theta_dot = (v_right -  v_left) / self.baseline
+        print(f"theta_dot: {theta_dot}")
+        print(f"theta_delta: {theta_delta}")
+        self.belief['mean'][0] = self.belief['mean'][0] + dt * v_car * np.sin(theta_dot)
+        self.belief['mean'][1] = self.belief['mean'][1] + dt * w_car
+        print(f"d_predicted: { self.belief['mean'][0]}")
+        print(f"phi_predicted: {self.belief['mean'][1]}")
+       
+        self.belief["covariance"] = self.A @ np.array(self.belief["covariance"]) @ self.A.T + self.Q
 
     def update(self, segments):
         # prepare the segments for each belief array
         segmentsArray = self.prepareSegments(segments)
         # generate all belief arrays
-
         measurement_likelihood = self.generate_measurement_likelihood(
             segmentsArray)
+        if measurement_likelihood is None:
+                return
 
         # TODO: Parameterize the measurement likelihood as a Gaussian
+        measurement_likelihood_mean =  measurement_likelihood.mean()
 
         # TODO: Apply the update equations for the Kalman Filter to self.belief
+        max_index = np.unravel_index(measurement_likelihood.argmax(), measurement_likelihood.shape)
 
+        d_mean = self.d_min + self.delta_d * max_index[0]
+        print(f"d_ground_truth: { d_mean }")
+        phi_mean = self.phi_min + self.delta_phi * max_index[1]
+        print(f"phi_ground_truth: { phi_mean }")
+        measurement_noise_d = np.random.normal(loc=0.0, scale=0.75)
+        measurement_noise_phi = np.random.normal(loc=0.0, scale=0.6)
+        measurement_d = d_mean + measurement_noise_d
+        measurement_phi = phi_mean + measurement_noise_phi
+        z = np.array([measurement_d, measurement_phi])
+        residual_mean = z - self.H @ np.array(self.belief["mean"])
+        residual_covariance = self.H @ self.belief["covariance"] @ self.H.T + self.R
+        kalman_gain = np.array(self.belief["covariance"]) @ self.H.T @ np.linalg.inv(residual_covariance)
+        self.belief["mean"] = np.array(self.belief["mean"]) + kalman_gain @ residual_mean
+        self.belief["covariance"] = np.array(self.belief["covariance"]) - kalman_gain @ self.H @ np.array(self.belief["covariance"])
 
     def getEstimate(self):
         return self.belief
