@@ -50,8 +50,8 @@ class LaneFilterHistogramKF():
         self.cov_0 = [[self.sigma_d_0, 0], [0, self.sigma_phi_0]]
 
         self.belief = {'mean': self.mean_0, 'covariance': self.cov_0}
-        self.Q = np.array([[0.8, 0], [0,  0.8]])
-        self.R = np.array([[0.15, 0], [0,  0.8]])
+        self.Q = np.array([[1, 0], [0,  1]])
+        self.R = np.array([[0.01, 0], [0,  0.01]])
         self.A = np.identity(2)
         self.H = np.identity(2)
         self.encoder_resolution = 0
@@ -62,8 +62,9 @@ class LaneFilterHistogramKF():
         # #TODO update self.belief based on right and left encoder data + kinematics
         if not self.initialized:
             return
-        d_left = 2 * np.pi * self.wheel_radius * (left_encoder_delta / 135) 
-        d_right = 2 * np.pi * self.wheel_radius * (right_encoder_delta / 135) 
+        print(self.encoder_resolution)
+        d_left = 2 * np.pi * self.wheel_radius * (left_encoder_delta / self.encoder_resolution) 
+        d_right = 2 * np.pi * self.wheel_radius * (right_encoder_delta / self.encoder_resolution) 
         v_left = d_left / dt
         v_right = d_right / dt
         theta_delta = (d_right -  d_left) / self.baseline
@@ -94,9 +95,9 @@ class LaneFilterHistogramKF():
         # TODO: Apply the update equations for the Kalman Filter to self.belief
         max_index = np.unravel_index(measurement_likelihood.argmax(), measurement_likelihood.shape)
 
-        d_mean = self.d_min + self.delta_d * max_index[0]
+        d_mean = self.d_min + self.delta_d * max_index[0] + self.delta_d * 0.5
         print(f"d_ground_truth: { d_mean }")
-        phi_mean = self.phi_min + self.delta_phi * max_index[1]
+        phi_mean = self.phi_min + self.delta_phi * max_index[1] + self.delta_phi * 0.5
         print(f"phi_ground_truth: { phi_mean }")
 
         z = np.array([d_mean, phi_mean])

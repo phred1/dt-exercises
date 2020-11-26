@@ -227,25 +227,28 @@ class LaneControllerNode(DTROS):
             v = 0
             omega = 0
         else:
-               
+            print("heree")
             # Compute errors
             d_err = pose_msg.d - self.params['~d_offset']
             phi_err = pose_msg.phi
 
             # We cap the error if it grows too large
             if np.abs(d_err) > self.params['~d_thres']:
+                print("if1")
                 self.log("d_err too large, thresholding it!", 'error')
                 d_err = np.sign(d_err) * self.params['~d_thres']
 
 
             wheels_cmd_exec = [self.wheels_cmd_executed.vel_left, self.wheels_cmd_executed.vel_right]
             if self.obstacle_stop_line_detected:
+                print("if2")
                 v, omega = self.controller.compute_control_action(d_err, phi_err, dt, wheels_cmd_exec, self.obstacle_stop_line_distance)
                 #TODO: This is a temporarily fix to avoid vehicle image detection latency caused unable to stop in time.
                 v = v*0.25
                 omega = omega*0.25
 
             else:
+                print("else")
                 v, omega = self.controller.compute_control_action(d_err, phi_err, dt, wheels_cmd_exec, self.stop_line_distance)
 
             # For feedforward action (i.e. during intersection navigation)
@@ -256,7 +259,7 @@ class LaneControllerNode(DTROS):
         car_control_msg.header = pose_msg.header
 
         # Add commands to car message
-        car_control_msg.v = v
+        car_control_msg.v = v * 2.5
         car_control_msg.omega = omega
 
         self.publishCmd(car_control_msg)
