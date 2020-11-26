@@ -102,7 +102,7 @@ class LaneController:
             c = (0.5 * (d1 - stop_line_distance) + (stop_line_distance - d2)) / (d1 - d2)
             v_new = self.parameters['~v_bar'].value * c
             v = np.max([self.parameters['~v_bar'].value / 2.0, np.min([self.parameters['~v_bar'].value, v_new])])
-            return v
+            return v * 4
 
     def integrate_errors(self, d_err, phi_err, dt):
         """Integrates error signals in lateral and heading direction.

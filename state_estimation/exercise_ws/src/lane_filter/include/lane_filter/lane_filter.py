@@ -50,8 +50,8 @@ class LaneFilterHistogramKF():
         self.cov_0 = [[self.sigma_d_0, 0], [0, self.sigma_phi_0]]
 
         self.belief = {'mean': self.mean_0, 'covariance': self.cov_0}
-        self.Q = np.array([[0.6, 0], [0,  0.6]])
-        self.R = np.array([[0.25, 0], [0,  0.1]])
+        self.Q = np.array([[0.8, 0], [0,  0.8]])
+        self.R = np.array([[0.15, 0], [0,  0.8]])
         self.A = np.identity(2)
         self.H = np.identity(2)
         self.encoder_resolution = 0
@@ -98,11 +98,8 @@ class LaneFilterHistogramKF():
         print(f"d_ground_truth: { d_mean }")
         phi_mean = self.phi_min + self.delta_phi * max_index[1]
         print(f"phi_ground_truth: { phi_mean }")
-        measurement_noise_d = np.random.normal(loc=0.0, scale=0.75)
-        measurement_noise_phi = np.random.normal(loc=0.0, scale=0.6)
-        measurement_d = d_mean + measurement_noise_d
-        measurement_phi = phi_mean + measurement_noise_phi
-        z = np.array([measurement_d, measurement_phi])
+
+        z = np.array([d_mean, phi_mean])
         residual_mean = z - self.H @ np.array(self.belief["mean"])
         residual_covariance = self.H @ self.belief["covariance"] @ self.H.T + self.R
         kalman_gain = np.array(self.belief["covariance"]) @ self.H.T @ np.linalg.inv(residual_covariance)
