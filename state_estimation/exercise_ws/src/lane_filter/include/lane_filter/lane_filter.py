@@ -99,9 +99,7 @@ class LaneFilterHistogramKF():
         max_index = np.unravel_index(measurement_likelihood.argmax(), measurement_likelihood.shape)
 
         d_mean = self.d_min + self.delta_d * max_index[0] + self.delta_d * 0.5
-        print(f"d_ground_truth: { d_mean }")
         phi_mean = self.phi_min + self.delta_phi * max_index[1] + self.delta_phi * 0.5
-        print(f"phi_ground_truth: { phi_mean }")
 
         z = np.array([d_mean, phi_mean])
         residual_mean = z - self.H @ np.array(self.belief["mean"])
