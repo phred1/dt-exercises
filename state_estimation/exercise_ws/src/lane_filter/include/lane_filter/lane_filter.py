@@ -62,22 +62,25 @@ class LaneFilterHistogramKF():
         # #TODO update self.belief based on right and left encoder data + kinematics
         if not self.initialized:
             return
-        print(self.encoder_resolution)
+
         d_left = 2 * np.pi * self.wheel_radius * (left_encoder_delta / self.encoder_resolution) 
         d_right = 2 * np.pi * self.wheel_radius * (right_encoder_delta / self.encoder_resolution) 
+        
         v_left = d_left / dt
         v_right = d_right / dt
+
         theta_delta = (d_right -  d_left) / self.baseline
+
         w_car =  theta_delta / dt
         v_car = (v_right + v_left) / 2
+
         theta_dot = (v_right -  v_left) / self.baseline
-        print(f"theta_dot: {theta_dot}")
-        print(f"theta_delta: {theta_delta}")
+ 
+
         self.belief['mean'][0] = self.belief['mean'][0] + dt * v_car * np.sin(theta_dot)
         self.belief['mean'][1] = self.belief['mean'][1] + dt * w_car
-        print(f"d_predicted: { self.belief['mean'][0]}")
-        print(f"phi_predicted: {self.belief['mean'][1]}")
-       
+        print(f"d_predicted: { self.belief['mean'][0] }")
+        print(f"phi_predicted: { self.belief['mean'][1] }")
         self.belief["covariance"] = self.A @ np.array(self.belief["covariance"]) @ self.A.T + self.Q
 
     def update(self, segments):
