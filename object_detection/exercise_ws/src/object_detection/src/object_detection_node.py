@@ -95,6 +95,9 @@ class ObjectDetectionNode(DTROS):
         msg.data = self.det2bool(bboxes[0], classes[0]) # [0] because our batch size given to the wrapper is 1
         
         self.pub_obj_dets.publish(msg)
+
+    def midpoint(p1, p2):
+        return ((p1.x+p2.x)/2, (p1.y+p2.y)/2)
     
     def det2bool(self, bboxes, classes):
         # TODO remove these debugging prints
@@ -103,7 +106,7 @@ class ObjectDetectionNode(DTROS):
         
         # This is a dummy solution, remove this next line
         return len(bboxes) > 1
-    
+
         
         # TODO filter the predictions: the environment here is a bit different versus the data collection environment, and your model might output a bit
         # of noise. For example, you might see a bunch of predictions with x1=223.4 and x2=224, which makes
@@ -118,7 +121,7 @@ class ObjectDetectionNode(DTROS):
         for i in range(len(bboxes)):
             x1, y1, x2, y2 = bboxes[i]
             label = classes[i]
-            
+            if label
             # TODO if label isn't a duckie, skip
             # TODO if detection is a pedestrian in front of us:
             #   return True

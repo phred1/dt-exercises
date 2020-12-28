@@ -5,7 +5,6 @@ import json
 import os
 import cv2
 import numpy as np
-
 from utils import makedirs
 
 DATASET_PATH="../../dataset"
