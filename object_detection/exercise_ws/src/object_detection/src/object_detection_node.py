@@ -11,6 +11,15 @@ import cv2
 from object_detection.model import Wrapper
 from cv_bridge import CvBridge
 
+class Point:
+    """
+    Point class. Convenience class for storing ROS-independent 3D points.
+
+    """
+    def __init__(self, x=None, y=None):
+        self.x = x  #: x-coordinate
+        self.y = y  #: y-coordinate
+
 class ObjectDetectionNode(DTROS):
 
     def __init__(self, node_name):
@@ -96,35 +105,29 @@ class ObjectDetectionNode(DTROS):
         
         self.pub_obj_dets.publish(msg)
 
-    def midpoint(p1, p2):
-        return ((p1.x+p2.x)/2, (p1.y+p2.y)/2)
+    def midpoint(self, p1, p2):
+        return Point((p1.x+p2.x)/2, (p1.y+p2.y)/2)
     
     def det2bool(self, bboxes, classes):
-        # TODO remove these debugging prints
-        print(bboxes)
-        print(classes)
-        
-        # This is a dummy solution, remove this next line
-        return len(bboxes) > 1
-
-        
-        # TODO filter the predictions: the environment here is a bit different versus the data collection environment, and your model might output a bit
-        # of noise. For example, you might see a bunch of predictions with x1=223.4 and x2=224, which makes
-        # no sense. You should remove these. 
-        
-        # TODO also filter detections which are outside of the road, or too far away from the bot. Only return True when there's a pedestrian (aka a duckie)
-        # in front of the bot, which you know the bot will have to avoid. A good heuristic would be "if centroid of bounding box is in the center of the image, 
-        # assume duckie is in the road" and "if bouding box's area is more than X pixels, assume duckie is close to us"
-        
-        
-        obj_det_list = []
+    
+        middle_bounds_x = (112-20, 112 + 20)
+        middle_bounds_y = (112-20, 112 + 20)
         for i in range(len(bboxes)):
-            x1, y1, x2, y2 = bboxes[i]
-            label = classes[i]
-            if label
-            # TODO if label isn't a duckie, skip
-            # TODO if detection is a pedestrian in front of us:
-            #   return True
+            if abs(bboxes[i][0] - bboxes[i][2]) < 5 or abs(bboxes[i][1] - bboxes[i][3]) < 5:
+               print("SKIP")
+               continue
+
+            if classes[i] == 1:
+                print("DUCKIE")
+                lower = Point(bboxes[i][0], bboxes[i][1]) 
+                upper = Point(bboxes[i][2], bboxes[i][3]) 
+                middle = self.midpoint(lower, upper)
+                if middle.x > middle_bounds_x[0] and middle.x < middle_bounds_x[1]:
+                     if middle.y > middle_bounds_y[0] and middle.y < middle_bounds_y[1]: 
+                        print("IN-FRONT")
+                        return True
+        return False
+
 
 
 

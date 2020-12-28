@@ -16,9 +16,12 @@ import torchvision.models.detection
 from torch.utils.data.sampler import SubsetRandomSampler
 import matplotlib.pyplot as plt
 import transforms as T
+import os
 import cv2
+
+
 MODEL_PATH="../exercise_ws/src/obj_det/include/model"
-ENV="real"
+ENV="sim"
 TRAIN_DATA=f"../dataset/{ENV}_training"
 CHECKPOINTS=f"../checkpoints/{ENV}"
 EVAL=f"./eval/{ENV}"
@@ -101,12 +104,11 @@ def evaluation(model, val_loader, device, epoch):
     cpu_device = torch.device("cpu")
 
     outputs = model([image_eval])
-    print(outputs[0]["boxes"].shape)
     outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
     keep = torchvision.ops.nms(outputs[0]["boxes"],outputs[0]["scores"], 0.01)
-    print(len(keep))
     predictions = outputs[0]["boxes"][keep].cpu().detach().numpy().astype(np.int32)
     fig, ax = plt.subplots(1, 1, figsize=(16, 8))
+
     for pred in predictions:
         cv2.rectangle(sample,
             (int(pred[0]), int(pred[1])),
@@ -118,13 +120,10 @@ def evaluation(model, val_loader, device, epoch):
                     (int(box[0]), int(box[1])),
                     (int(box[2]), int(box[3])),
                     (220, 0, 0), 1)
-        print(box)
     ax.set_axis_off()
+    if not os.path.isdir('new_folder'):
+        os.mkdir(EVAL)
     cv2.imwrite(f"{EVAL}/epoch_{epoch}.png",cv2.cvtColor(sample, cv2.COLOR_RGB2BGR))
-    # sample = sample.astype(np.float32)
-    # sample /= 255.
-    # cv2.imshow("eval",cv2.cvtColor(sample, cv2.COLOR_RGB2BGR))
-    # cv2.waitKey(0)
 
 def main():
 
@@ -224,6 +223,8 @@ def main():
         print("That's it!")
         evaluation(model, validation_loader, device, epoch)
         torch.save(model.state_dict(), f"{CHECKPOINTS}/epoch_{epoch}")
+    torch.save(model.state_dict(), f"{MODEL_PATH}/weights/model.py")
+
     pass
 
 if __name__ == "__main__":
