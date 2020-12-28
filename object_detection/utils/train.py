@@ -22,6 +22,7 @@ ENV="real"
 TRAIN_DATA=f"../dataset/{ENV}_training"
 CHECKPOINTS=f"../checkpoints/{ENV}"
 EVAL=f"./eval/{ENV}"
+
 class Averager:
     def __init__(self):
         self.current_total = 0.0
