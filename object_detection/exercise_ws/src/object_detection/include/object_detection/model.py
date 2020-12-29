@@ -4,8 +4,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import torch
 from torch import nn
 import numpy as np
-ENV="sim"
-CHECKPOINT=f"../../../checkpoints/{ENV}"
+
 class NoGPUAvailable(Exception):
     pass
 
@@ -16,13 +15,11 @@ class Wrapper():
         self.checkpoint = torch.load(model_file, map_location=torch.device('cpu'))
         self.model.model.load_state_dict(self.checkpoint)
         self.model.model.eval()
-        # TODO Instantiate your model and other class instances here!
-        # TODO Don't forget to set your model in evaluation/testing/production mode, and sending it to the GPU
-        # TODO If no GPU is available, raise the NoGPUAvailable exception
+
         self.device = None
         if torch.cuda.is_available():
             print("GPU FOUND!")
-            self.device =  torch.device('cuda')
+            self.device = torch.device('cuda')
         else: 
             raise NoGPUAvailable()
         self.model.model.to(self.device)
@@ -31,7 +28,7 @@ class Wrapper():
     def predict(self, batch_or_image):
         img = torch.as_tensor(batch_or_image, dtype=torch.float32)
         img = img.permute(2, 0, 1).to(self.device)
-        outputs = self.model.model([img]) # TODO you probably need to send the image to a tensor, etc.
+        outputs = self.model.model([img])
         keep = torchvision.ops.nms(outputs[0]["boxes"],outputs[0]["scores"], 0.01)
         box = outputs[0]["boxes"][keep].cpu().detach().numpy().astype(np.int32)
         label = outputs[0]["labels"][keep].cpu().detach().numpy().astype(np.int32)
@@ -39,7 +36,7 @@ class Wrapper():
 
         return [box], [label], [score]
 
-class Model(nn.Module):    # TODO probably extend a TF or Pytorch class!
+class Model(nn.Module): 
     def __init__(self):
         super(Model, self).__init__()
         self.model = self.get_model(5)
