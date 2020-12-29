@@ -21,16 +21,16 @@ class Wrapper():
         # TODO If no GPU is available, raise the NoGPUAvailable exception
         self.device = None
         if torch.cuda.is_available():
-            print("HEREEEEE")
+            print("GPU FOUND!")
             self.device =  torch.device('cuda')
-        # else: 
-        #     raise NoGPUAvailable()
-        self.model.model.to(torch.device('cpu'))
+        else: 
+            raise NoGPUAvailable()
+        self.model.model.to(self.device)
 
 
     def predict(self, batch_or_image):
         img = torch.as_tensor(batch_or_image, dtype=torch.float32)
-        img = img.permute(2, 0, 1)
+        img = img.permute(2, 0, 1).to(self.device)
         outputs = self.model.model([img]) # TODO you probably need to send the image to a tensor, etc.
         keep = torchvision.ops.nms(outputs[0]["boxes"],outputs[0]["scores"], 0.01)
         box = outputs[0]["boxes"][keep].cpu().detach().numpy().astype(np.int32)
