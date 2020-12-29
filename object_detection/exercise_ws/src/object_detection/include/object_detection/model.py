@@ -12,7 +12,7 @@ class Wrapper():
     def __init__(self, model_file):
         self.model = Model()
 
-        self.checkpoint = torch.load(model_file, map_location=torch.device('cpu'))
+        self.checkpoint = torch.load(model_file)
         self.model.model.load_state_dict(self.checkpoint)
         self.model.model.eval()
 
