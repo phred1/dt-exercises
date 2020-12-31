@@ -110,14 +110,13 @@ class ObjectDetectionNode(DTROS):
     
     def det2bool(self, bboxes, classes):
     
-        middle_bounds_x = (90, 150)
-        middle_bounds_y = (180, 224)
+        middle_bounds_x = (80, 160)
+        middle_bounds_y = (100, 224)
         for i in range(len(bboxes)):
             if abs(bboxes[i][0] - bboxes[i][2]) < 2 or abs(bboxes[i][1] - bboxes[i][3]) < 2:
                print("SKIP")
                continue
             if classes[i] == 1:
-                print(bboxes[i])
                 lower = Point(bboxes[i][0], bboxes[i][1]) 
                 upper = Point(bboxes[i][2], bboxes[i][3]) 
                 middle = self.midpoint(lower, upper)
