@@ -29,11 +29,14 @@ class Wrapper():
         img = torch.as_tensor(batch_or_image, dtype=torch.float32)
         img = img.permute(2, 0, 1).to(self.device)
         outputs = self.model.model([img])
-        keep = torchvision.ops.nms(outputs[0]["boxes"],outputs[0]["scores"], 0.01)
-        box = outputs[0]["boxes"][keep].cpu().detach().numpy().astype(np.int32)
+        keep = torchvision.ops.nms(outputs[0]["boxes"], outputs[0]["scores"], 0.01)
+        box = outputs[0]["boxes"][keep].cpu().detach().numpy().astype(np.float32)
         label = outputs[0]["labels"][keep].cpu().detach().numpy().astype(np.int32)
-        score = outputs[0]["scores"][keep].cpu().detach().numpy().astype(np.int32)
-
+        score = outputs[0]["scores"][keep].cpu().detach().numpy().astype(np.float32)
+        best_pred_idx = np.argwhere(score > 0.4).flatten().tolist()
+        box = box[best_pred_idx]
+        label = label[best_pred_idx]
+        score = score[best_pred_idx]
         return [box], [label], [score]
 
 class Model(nn.Module): 

@@ -112,7 +112,6 @@ class ObjectDetectionNode(DTROS):
     
         middle_bounds_x = (90, 150)
         middle_bounds_y = (180, 224)
-        print(classes)
         for i in range(len(bboxes)):
             if abs(bboxes[i][0] - bboxes[i][2]) < 2 or abs(bboxes[i][1] - bboxes[i][3]) < 2:
                print("SKIP")
